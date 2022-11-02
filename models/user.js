@@ -27,6 +27,7 @@ class User {
       if(!username || !password || !first_name || !last_name || !phone){
         throw new ExpressError("Some items are missing.", 400);
       }
+
       const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
 
       //get current time stamp for join_at column.
@@ -57,11 +58,12 @@ class User {
       const user = results.rows[0];
       if(user) {
         if (await bcrypt.compare(password, user.password)) {
-          const token = jwt.sign({ username }, SECRET_KEY);
+          // const token = jwt.sign({ username }, SECRET_KEY);
           return true;
         }
         return false;
     }
+    
    }
 
   /** Update last_login_at for user */
@@ -77,7 +79,7 @@ class User {
       );
     const user  = requests.rows[0];
     if (!user){
-      throw new ExpressError("User not found", 404);
+      throw new ExpressError("User not found", 400);
     }
    }
 
