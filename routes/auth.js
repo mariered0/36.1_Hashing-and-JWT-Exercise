@@ -8,7 +8,7 @@ const db = require("../db");
 const jwt = require("jsonwebtoken");
 const { BCRYPT_WORK_FACTOR, SECRET_KEY } = require("../config");
 // //import middleware
-const { authenticateJWT, ensureLoggedIn, ensureAdmin } = require("../middleware/auth");
+const { authenticateJWT } = require("../middleware/auth");
 
 const User = require("../models/user");
 
