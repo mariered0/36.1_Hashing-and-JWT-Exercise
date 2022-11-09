@@ -9,30 +9,24 @@ const { authenticateJWT, ensureLoggedIn, ensureAdmin } = require("../middleware/
 /** User of the site. */
 
 class User {
-  constructor(username, password, first_name, last_name, phone, join_at, last_login_at){
-    this.username = username;
-    this.password = password;
-    this.first_name = first_name;
-    this.last_name = last_name;
-    this.phone = phone;
-    this.join_at = join_at;
-    this.last_login_at;
-  }
+  // constructor(username, password, first_name, last_name, phone, join_at, last_login_at){
+  //   this.username = username;
+  //   this.password = password;
+  //   this.first_name = first_name;
+  //   this.last_name = last_name;
+  //   this.phone = phone;
+  //   this.join_at = join_at;
+  //   this.last_login_at;
+  // }
 
   /** register new user -- returns
    *    {username, password, first_name, last_name, phone}
    */
 
   static async register({username, password, first_name, last_name, phone}) {
-      if(!username || !password || !first_name || !last_name || !phone){
-        throw new ExpressError("Some items are missing.", 400);
-      }
 
       const hashedPassword = await bcrypt.hash(password, BCRYPT_WORK_FACTOR);
 
-      //get current time stamp for join_at column.
-      const join_at = new Date();
-      const last_login_at = new Date();
       const results = await db.query(`
       INSERT INTO users (username, password, first_name, last_name, phone, join_at, last_login_at)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -46,39 +40,29 @@ class User {
   /** Authenticate: is this username/password valid? Returns boolean. */
 
   static async authenticate(username, password) {
-      // const { username, password } = req.body;
-      if(!username || !password){
-        throw new ExpressError("Username and password required", 400);
-      }
       const results = await db.query(
-        `SELECT username, password
+        `SELECT password
          FROM users
          WHERE username = $1`,
-         [username]);
+        [username]);
       const user = results.rows[0];
-      if(user) {
-        if (await bcrypt.compare(password, user.password)) {
-          // const token = jwt.sign({ username }, SECRET_KEY);
-          return true;
-        }
-        return false;
-    }
+      return user && await bcrypt.compare(password, user.password);
+      }
     
-   }
+    
+   
 
   /** Update last_login_at for user */
 
   static async updateLoginTimestamp(username) {
-    const last_login_at = new Date();
-    const requests = await db.query(
+    const result = await db.query(
       `UPDATE users
-      SET last_login_at = $1
-      WHERE username = $2
+      SET last_login_at = current_timestamp
+      WHERE username = $1
       RETURNING username`,
-      [last_login_at, username]
+      [username]
       );
-    const user  = requests.rows[0];
-    if (!user){
+    if (!result.rows[0]){
       throw new ExpressError("User not found", 400);
     }
    }
