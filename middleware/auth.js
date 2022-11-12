@@ -31,8 +31,7 @@ function ensureLoggedIn(req, res, next) {
 
 function ensureCorrectUser(req, res, next) {
   try {
-    console.log('req.user', req.user.username);
-    console.log('req.params', req.params.username);
+
     if (req.user.username === req.params.username) {
       return next();
     } else {
